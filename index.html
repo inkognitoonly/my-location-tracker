@@ -70,6 +70,7 @@
   <button class="btn" onclick="getLocation()">📍 Получить координаты</button>
   <button class="btn" onclick="getLocation()">🔄 Обновить координаты</button>
   <button class="btn" onclick="showHistory()">🗺 Показать карту с историей</button>
+  <button class="btn" onclick="downloadCSV()">📥 Скачать координаты</button>
   <a id="mapLink" href="#" target="_blank" style="display:none;">Открыть в Google Maps</a>
   <div id="map"></div>
 
@@ -126,7 +127,7 @@
 
     function drawMap() {
       const mapDiv = document.getElementById('map');
-      mapDiv.innerHTML = ''; // reset map
+      mapDiv.innerHTML = '';
       const map = L.map('map').setView([coordinates[0].lat, coordinates[0].lon], 13);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -147,7 +148,25 @@
       document.getElementById('map').style.display = 'block';
       drawMap();
     }
+
+    function downloadCSV() {
+      if (coordinates.length === 0) {
+        alert("Нет данных для скачивания.");
+        return;
+      }
+
+      let csv = "Широта,Долгота\n";
+      coordinates.forEach(c => {
+        csv += `${c.lat},${c.lon}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "coordinates.csv";
+      link.click();
+    }
   </script>
 </body>
 </html>
-
