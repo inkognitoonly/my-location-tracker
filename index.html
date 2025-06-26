@@ -82,6 +82,7 @@
   <button class="btn" onclick="downloadCSV()">📥 Скачать координаты</button>
   <a id="mapLink" href="#" target="_blank" style="display:none;">Открыть в Google Maps</a>
   <div id="map"></div>
+<button class="btn" onclick="toggleAutoUpdate()">▶ Автообновление</button>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
@@ -175,6 +176,20 @@
       link.href = url;
       link.download = "coordinates.csv";
       link.click();
+      let autoUpdateInterval = null;
+
+function toggleAutoUpdate() {
+  if (autoUpdateInterval) {
+    clearInterval(autoUpdateInterval);
+    autoUpdateInterval = null;
+    alert("⏸ Автообновление остановлено.");
+  } else {
+    getLocation(); // Получить координаты сразу
+    autoUpdateInterval = setInterval(getLocation, 60000); // Каждую минуту
+    alert("▶ Автообновление включено (обновление каждую минуту).");
+  }
+}
+
     }
   </script>
 </body>
