@@ -72,15 +72,7 @@
         })
       });
 
-      // Google Таблица
-      fetch("https://script.google.com/macros/s/AKfycbwfaWCPXIXSAHA5yHrvPl1Nr0uTQ08Tf9pvK0SQMj9KBlDRyiHcIeLsM-jaw0VtYKqrYQ/exec", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          lat: latitude,
-          lon: longitude
-        })
-      });
+    
     }
 
     function error(err) {
