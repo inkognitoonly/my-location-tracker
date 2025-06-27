@@ -189,6 +189,19 @@ function toggleAutoUpdate() {
     alert("▶ Автообновление включено (обновление каждую минуту).");
   }
 }
+let autoUpdateInterval = null;
+
+function toggleAutoUpdate() {
+  if (autoUpdateInterval) {
+    clearInterval(autoUpdateInterval);
+    autoUpdateInterval = null;
+    alert("⏸ Автообновление остановлено.");
+  } else {
+    getLocation();
+    autoUpdateInterval = setInterval(getLocation, 60000); // 60 секунд
+    alert("▶ Автообновление включено.");
+  }
+}
 
     }
   </script>
